@@ -98,6 +98,9 @@
     $("body").tetrisSetup(options);
 	
     $(document).keydown(function(e){
+	  if (e.keyCode == 32) {
+	    $("#tetrisBoard").tetrisFallDown();
+	  }
       if (e.keyCode == 38) {
         $("#tetrisBoard").tetrisRotate();
       }
@@ -170,6 +173,21 @@
 	  setTimeout('jQuery.fn.tetrisDown()',1000-(10*jQuery.fn.myOptions.fallSpeed));
 	}
   }
+  jQuery.fn.tetrisFallDown = function() {
+    var y = jQuery.fn.shapeY;
+	var shapeIndex = 0;
+	jQuery.fn.clearShape();
+    while (y < jQuery.fn.myOptions.boardHeight-jQuery.fn.shape.map.split("\n").length) {
+	  shapeIndex = (y*jQuery.fn.myOptions.boardWidth)+jQuery.fn.shapeX;
+	  if ($(this).tetrisCheck(jQuery.fn.shape.dIndexes, shapeIndex) == false) {
+		break;
+	  }
+	  y++;
+	}
+	jQuery.fn.shapeY = y;
+	jQuery.fn.shapeIndex = jQuery.fn.shapeY*jQuery.fn.myOptions.boardWidth + jQuery.fn.shapeX;
+	$(this).tetrisRender();
+  }
   jQuery.fn.tetrisRenderNext = function() {
     $(".tetrisnext").hide();
 	var nextMap = jQuery.fn.nextshape.map.split("\n");
@@ -199,10 +217,10 @@
       }
 	}
   }
-  jQuery.fn.tetrisCheck = function(indexes) {
+  jQuery.fn.tetrisCheck = function(indexes, shapeIndex) {
     for (var i=0; i<indexes.length; i++) {
-	  if (jQuery.fn.shapeIndex+indexes[i] >= 0) {
-	    if ( $("#tetrisbox"+(jQuery.fn.shapeIndex+indexes[i])).filter(':visible').length == 1 ) {
+	  if (shapeIndex+indexes[i] >= 0) {
+	    if ( $("#tetrisbox"+(shapeIndex+indexes[i])).filter(':visible').length == 1 ) {
 	      return false;
 		}
 	  }
@@ -211,7 +229,7 @@
   }
   jQuery.fn.tetrisMoveRight = function() {
     if (jQuery.fn.shapeX < jQuery.fn.myOptions.boardWidth-jQuery.fn.shape.width) {
-	  if ($(this).tetrisCheck(jQuery.fn.shape.rIndexes)) {
+	  if ($(this).tetrisCheck(jQuery.fn.shape.rIndexes,jQuery.fn.shapeIndex)) {
 	    jQuery.fn.clearShape();
 		jQuery.fn.shapeX++;
 		jQuery.fn.shapeIndex++;
@@ -221,7 +239,7 @@
   }
   jQuery.fn.tetrisMoveLeft = function() {
     if (jQuery.fn.shapeX > 0) {
-	  if ($(this).tetrisCheck(jQuery.fn.shape.lIndexes)) {
+	  if ($(this).tetrisCheck(jQuery.fn.shape.lIndexes,jQuery.fn.shapeIndex)) {
 	    $(this).clearShape();
 		jQuery.fn.shapeX--;
 		jQuery.fn.shapeIndex--;
@@ -232,7 +250,7 @@
   jQuery.fn.tetrisRotate = function() {
 	$(this).clearShape();
 	var rotatedShape = jQuery.fn.tetrisShapes[jQuery.fn.shape.rotate];
-	if ($(this).tetrisCheck(rotatedShape.indexes) &&
+	if ($(this).tetrisCheck(rotatedShape.indexes, jQuery.fn.shapeIndex) &&
 	    jQuery.fn.shapeX+rotatedShape.width <= jQuery.fn.myOptions.boardWidth) {
 	  jQuery.fn.shape = rotatedShape;
 	}
@@ -240,7 +258,7 @@
   }
   jQuery.fn.tetrisMoveDown = function() {
     if (jQuery.fn.shapeY < jQuery.fn.myOptions.boardHeight-jQuery.fn.shape.map.split("\n").length) {
-	  if ($(this).tetrisCheck(jQuery.fn.shape.dIndexes)) {
+	  if ($(this).tetrisCheck(jQuery.fn.shape.dIndexes, jQuery.fn.shapeIndex)) {
 	    $(this).clearShape();
 		jQuery.fn.shapeY++;
 		jQuery.fn.shapeIndex = jQuery.fn.shapeY*jQuery.fn.myOptions.boardWidth + jQuery.fn.shapeX;

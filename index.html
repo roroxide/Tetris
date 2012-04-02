@@ -13,24 +13,20 @@
     var myOptions = jQuery.extend({
 	  boardWidth: 15,
 	  boardHeight: 20,
-	  boardColor: '#ccf',
+	  boardColor: '#aaf',
 	  boardBorder: '1px solid green',
 	  fallSpeed: 0,
 	  cellWidth: 12,
 	},options);
 	jQuery.fn.myOptions = myOptions;
 	jQuery.fn.tetrisScore = 0;
-	$('<div id="tetrisBoard" style="position:absolute;display:none;"></div>')
+	$('<div id="tetrisBoard" style="position:absolute;display:none;left:0;top:0;"></div>')
 	.css("width", (myOptions.cellWidth*myOptions.boardWidth)+"px")
 	.css("height", (myOptions.cellWidth*myOptions.boardHeight)+"px")
 	.css("background-color", myOptions.boardColor)
 	.css("border", myOptions.boardColor)
 	.css("overflow", "hidden")
 	.appendTo($(this));
-	$('<div id="tetrisScore" style="position:absolute;height:20px;text-align:center;">Score : 0</div>')
-	.css("width", (myOptions.cellWidth*myOptions.boardWidth)+"px")
-	.css("background-color", "#ddd")
-	.css("top", ((myOptions.cellWidth+1)*myOptions.boardHeight)+"px").appendTo($(this));
 	for(var y=0; y<myOptions.boardHeight; y++) {
 	  for (var x=0; x<myOptions.boardWidth; x++) {
 	    $('<div class="tetrisbox" id="tetrisbox'+(y*myOptions.boardWidth+x)+'" style="position:absolute;display:none;"></div>')
@@ -42,7 +38,29 @@
 		.appendTo("#tetrisBoard");
 	  }
 	}
+	$('<div id="tetrisScore" style="position:absolute;left:0;height:20px;text-align:center;">Score : 0</div>')
+	.css("width", (myOptions.cellWidth*myOptions.boardWidth)+"px")
+	.css("background-color", "#ddd")
+	.css("top", ((myOptions.cellWidth+1)*myOptions.boardHeight)+"px").appendTo($(this));
+	$('<div id="tetrisNext" style="position:absolute;top:0;"></div>')
+	.css("left", (myOptions.cellWidth*myOptions.boardWidth+10)+"px")
+	.css("width", (myOptions.cellWidth*4)+"px")
+	.css("height", (myOptions.cellWidth*4)+"px")
+	.css("background-color", "#faf")
+	.appendTo($(this))
+	for(var y=0; y<4; y++) {
+	  for (var x=0; x<4; x++) {
+	    $('<div class="tetrisnext" id="tetrisnext'+(y*4+x)+'" style="position:absolute;display:none;"></div>')
+	    .css("left", (x*myOptions.cellWidth)+"px")
+	    .css("top", (y*myOptions.cellWidth)+"px")
+	    .css({"border": "1px solid #000", "background-color": "yellow"})
+	    .css("width", (myOptions.cellWidth-2)+"px")
+	    .css("height",(myOptions.cellWidth-2)+"px")
+		.appendTo("#tetrisNext");
+	  }
+	}
 	jQuery.fn.shape = null;
+	jQuery.fn.nextshape = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
 	jQuery.fn.shapeX = 0;
 	jQuery.fn.shapeY = 0;
 	
@@ -96,10 +114,12 @@
     $("#tetrisBoard").tetrisShape().tetrisDown();
   }
   jQuery.fn.tetrisShape = function() {
-    jQuery.fn.shape  = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
+    jQuery.fn.shape  = jQuery.fn.nextshape;
     jQuery.fn.shapeX = Math.floor(Math.random()*(jQuery.fn.myOptions.boardWidth-jQuery.fn.shape.width));
     jQuery.fn.shapeY = 0-jQuery.fn.shape.map.split("\n").length;
     jQuery.fn.shapeIndex = jQuery.fn.shapeY*jQuery.fn.myOptions.boardWidth + jQuery.fn.shapeX;
+	jQuery.fn.nextshape = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
+	jQuery.fn.tetrisRenderNext();
 	return this;
   }
   jQuery.fn.tetrisDown = function() {
@@ -147,7 +167,20 @@
 	  // next shape
 	  $("#tetrisBoard").tetrisShape().tetrisDown();
 	} else {
-	  setTimeout('jQuery.fn.tetrisDown()',1000-(50*jQuery.fn.myOptions.fallSpeed));
+	  setTimeout('jQuery.fn.tetrisDown()',1000-(10*jQuery.fn.myOptions.fallSpeed));
+	}
+  }
+  jQuery.fn.tetrisRenderNext = function() {
+    $(".tetrisnext").hide();
+	var nextMap = jQuery.fn.nextshape.map.split("\n");
+	var index = 0;
+    for (var y=0; y<nextMap.length; y++) {
+	  for (var x=0; x<nextMap[y].length; x++) {
+	    if (nextMap[y].substr(x,1) == 'o') {
+		  index = y*4+x;
+		  $("#tetrisnext"+index).show();
+		}
+	  }
 	}
   }
   jQuery.fn.tetrisRender = function() {

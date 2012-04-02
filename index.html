@@ -61,11 +61,11 @@
 	}
 	$('<div id="tetrisHelp" style="position:absolute; text-align:left; padding:2px; background-color:#ffa">'+
 	  'use :<br/>'+
-	  '<b>arrows</b> to move and rotate<br />'+
-	  ' <b>enter</b>/<b>space</b> to fall down,<br />'+
-	  ' <b>t</b> to try again,<br />'+
-	  ' and <b>p</b> to pause and continue.'+
-	  ' </div>')
+	  ' &nbsp; <b>arrows</b> to move and rotate<br />'+
+	  ' &nbsp; <b>enter</b>/<b>space</b> to fall down,<br />'+
+	  ' &nbsp; <b>t</b> to try again,<br />'+
+	  ' &nbsp; <b>p</b> to pause and continue.'+
+	  '</div>')
 	.css("left", (myOptions.cellWidth*myOptions.boardWidth+10)+"px")
 	.css("top", (myOptions.cellWidth*4+10)+"px").appendTo($(this));
 	
@@ -117,7 +117,7 @@
     $(".tetrisbox").hide();
 	$(".tetrisnext").hide();
 	jQuery.fn.gameNo++;
-    $("#tetrisBoard").tetrisShape().tetrisDown(jQuery.fn.gameNo);
+	jQuery.fn.popupCountDown();
   }
   jQuery.fn.tetrisStart = function(options) {
     $("body").tetrisSetup(options);
@@ -146,7 +146,7 @@
         $("#tetrisBoard").tetrisMoveDown();
       }
     });
-    $("#tetrisBoard").tetrisNewgame();
+	jQuery.fn.popupStartGame();
   }
   jQuery.fn.tetrisShape = function() {
     jQuery.fn.shape  = jQuery.fn.nextshape;
@@ -259,9 +259,13 @@
 	}
   }
   jQuery.fn.tetrisCheck = function(indexes, shapeIndex) {
+    var index = 0;
+	var lastIndex = (jQuery.fn.myOptions.boardHeight+1)*jQuery.fn.myOptions.boardWidth;
     for (var i=0; i<indexes.length; i++) {
-	  if (shapeIndex+indexes[i] >= 0) {
-	    if ( $("#tetrisbox"+(shapeIndex+indexes[i])).filter(':visible').length == 1 ) {
+	  index = shapeIndex+indexes[i];
+	  if ( index >= 0 ) {
+	    
+	    if ( $("#tetrisbox"+index).filter(':visible').length == 1 || $("#tetrisbox"+index).length == 0 ) {
 	      return false;
 		}
 	  }
@@ -353,6 +357,36 @@
 	  $(".popupBoard").remove();
 	  jQuery.fn.tetrisPause = false;
 	});
+  }
+  jQuery.fn.popupStartGame = function() {
+	$('<div class="popupBoard" style="z-index:10000;position:absolute;"></div>').css("background-color","gray")
+	.css("width", $("#tetrisBoard").css("width"))
+	.css("height", $("#tetrisBoard").css("height"))
+	.append('<div id="startgame" style="font-size: 22px; color:orange; padding-top:100px; cursor: pointer;'+
+	  ' font-family: arial; direction:ltr; text-decoration:underline;">Start Game</div>')
+	.appendTo("#tetrisBoard");
+	$("#startgame").click(function(){
+	  jQuery.fn.tetrisNewgame();
+	});
+  }
+  jQuery.fn.popupCountDown = function() {
+	$('<div class="popupBoard" style="z-index:10000;position:absolute;"></div>').css("background-color","gray")
+	.css("width", $("#tetrisBoard").css("width"))
+	.css("height", $("#tetrisBoard").css("height"))
+	.append('<div id="countdown" style="font-size: 22px; color:orange; padding-top:100px; cursor: pointer;'+
+	  ' font-family: arial; direction:ltr;"></div>')
+	.appendTo("#tetrisBoard");
+	$("#countdown").countDown(3);
+  }
+  jQuery.fn.countDown = function(number) {
+    if (number == 0) {
+	  $('.popupBoard').remove();
+      $("#tetrisBoard").tetrisShape().tetrisDown(jQuery.fn.gameNo);
+	} else {
+	  $(this).html(number);
+	  number--;
+	  setTimeout('$("#countdown").countDown('+number+')', 1000);
+	}
   }
   jQuery.fn.tetrisShapes = [
 	{"rotate": 1,  "width":4, "map":"oooo"      , "indexes":[], "lIndexes":[], "rIndexes":[], "dIndexes":[]},//#0

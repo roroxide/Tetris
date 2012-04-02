@@ -5,7 +5,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>each</title>
 </head>
-<body style="direction:rtl;">
+<body style="direction:rtl; text-align:center;">
+<div id="gameboard" style="margin: 0 auto; width: 800px;"></div>
 <script type="text/JavaScript" src="jquery.js"></script>
 <script type="text/JavaScript">
 (function($){
@@ -63,6 +64,8 @@
 	jQuery.fn.nextshape = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
 	jQuery.fn.shapeX = 0;
 	jQuery.fn.shapeY = 0;
+	jQuery.fn.tetrisPause = false;
+	jQuery.fn.shapeNo = 0;
 	
 	// start render indexes
   var shapeMap = [];
@@ -98,7 +101,10 @@
     $("body").tetrisSetup(options);
 	
     $(document).keydown(function(e){
-	  if (e.keyCode == 32) {
+	  if (e.keyCode == 80) {
+	    jQuery.fn.tetrisPause = !jQuery.fn.tetrisPause;
+	  }
+	  if (e.keyCode == 32 || e.keyCode == 13) {
 	    $("#tetrisBoard").tetrisFallDown();
 	  }
       if (e.keyCode == 38) {
@@ -123,6 +129,7 @@
     jQuery.fn.shapeIndex = jQuery.fn.shapeY*jQuery.fn.myOptions.boardWidth + jQuery.fn.shapeX;
 	jQuery.fn.nextshape = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
 	jQuery.fn.tetrisRenderNext();
+	jQuery.fn.shapeNo++;
 	return this;
   }
   jQuery.fn.tetrisDown = function() {
@@ -174,6 +181,9 @@
 	}
   }
   jQuery.fn.tetrisFallDown = function() {
+    if (jQuery.fn.tetrisPause) {
+	  return true;
+	}
     var y = jQuery.fn.shapeY;
 	var shapeIndex = 0;
 	jQuery.fn.clearShape();
@@ -228,6 +238,9 @@
 	return true;
   }
   jQuery.fn.tetrisMoveRight = function() {
+    if (jQuery.fn.tetrisPause) {
+	  return true;
+	}
     if (jQuery.fn.shapeX < jQuery.fn.myOptions.boardWidth-jQuery.fn.shape.width) {
 	  if ($(this).tetrisCheck(jQuery.fn.shape.rIndexes,jQuery.fn.shapeIndex)) {
 	    jQuery.fn.clearShape();
@@ -238,6 +251,9 @@
 	}
   }
   jQuery.fn.tetrisMoveLeft = function() {
+    if (jQuery.fn.tetrisPause) {
+	  return true;
+	}
     if (jQuery.fn.shapeX > 0) {
 	  if ($(this).tetrisCheck(jQuery.fn.shape.lIndexes,jQuery.fn.shapeIndex)) {
 	    $(this).clearShape();
@@ -248,6 +264,9 @@
 	}
   }
   jQuery.fn.tetrisRotate = function() {
+    if (jQuery.fn.tetrisPause) {
+	  return true;
+	}
 	$(this).clearShape();
 	var rotatedShape = jQuery.fn.tetrisShapes[jQuery.fn.shape.rotate];
 	if ($(this).tetrisCheck(rotatedShape.indexes, jQuery.fn.shapeIndex) &&
@@ -257,6 +276,9 @@
     $(this).tetrisRender();
   }
   jQuery.fn.tetrisMoveDown = function() {
+    if (jQuery.fn.tetrisPause) {
+	  return true;
+	}
     if (jQuery.fn.shapeY < jQuery.fn.myOptions.boardHeight-jQuery.fn.shape.map.split("\n").length) {
 	  if ($(this).tetrisCheck(jQuery.fn.shape.dIndexes, jQuery.fn.shapeIndex)) {
 	    $(this).clearShape();
@@ -299,7 +321,7 @@
     {"rotate": 27, "width":3, "map":" o\nooo\n o"   , "indexes":[], "lIndexes":[], "rIndexes":[], "dIndexes":[]}, //#27
   ];
 })(jQuery);
-$('body').tetrisStart();
+$('#gameboard').tetrisStart();
 </script>
 </body>
 </html>

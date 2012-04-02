@@ -144,8 +144,11 @@
     var result = jQuery.fn.tetrisMoveDown();
 	if (result == false ) {
 	  if (jQuery.fn.shapeY < 0) {
+	    console.log('game over');
 	    jQuery.fn.tetrisPause = true;
-	    return false;
+		$("#tetrisBoard").children().remove().end().css("background-color","gray")
+		.append('<div id="gameover" style="font-size: 22px; color:orange; padding-top:80px;'+
+		  ' font-family: arial">Game Over!</div>');
 	  }
 	  // clear lines
 	  var filledFlag = true;

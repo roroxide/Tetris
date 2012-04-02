@@ -39,7 +39,7 @@
 		.appendTo("#tetrisBoard");
 	  }
 	}
-	$('<div id="tetrisScore" style="position:absolute;left:0;height:20px;text-align:center;">Score : 0</div>')
+	$('<div id="tetrisScore" style="font-weight:bold;font-family:arial;position:absolute;left:0;height:20px;text-align:center;">Score : 0</div>')
 	.css("width", (myOptions.cellWidth*myOptions.boardWidth)+"px")
 	.css("background-color", "#ddd")
 	.css("top", ((myOptions.cellWidth+1)*myOptions.boardHeight)+"px").appendTo($(this));
@@ -136,6 +136,7 @@
     var result = jQuery.fn.tetrisMoveDown();
 	if (result == false ) {
 	  if (jQuery.fn.shapeY < 0) {
+	    jQuery.fn.tetrisPause = true;
 	    return false;
 	  }
 	  // clear lines

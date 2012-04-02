@@ -20,7 +20,6 @@
 	  cellWidth: 12,
 	},options);
 	jQuery.fn.myOptions = myOptions;
-	jQuery.fn.tetrisScore = 0;
 	$('<div id="tetrisBoard" style="position:absolute;display:none;left:0;top:0;"></div>')
 	.css("width", (myOptions.cellWidth*myOptions.boardWidth)+"px")
 	.css("height", (myOptions.cellWidth*myOptions.boardHeight)+"px")
@@ -64,16 +63,11 @@
 	  'use :<br/>'+
 	  '<b>arrows</b> to move and rotate<br />'+
 	  ' <b>enter</b>/<b>space</b> to fall down,<br />'+
+	  ' <b>t</b> to try again,<br />'+
 	  ' and <b>p</b> to pause and continue.'+
 	  ' </div>')
 	.css("left", (myOptions.cellWidth*myOptions.boardWidth+10)+"px")
 	.css("top", (myOptions.cellWidth*4+10)+"px").appendTo($(this));
-	jQuery.fn.shape = null;
-	jQuery.fn.nextshape = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
-	jQuery.fn.shapeX = 0;
-	jQuery.fn.shapeY = 0;
-	jQuery.fn.tetrisPause = false;
-	jQuery.fn.shapeNo = 0;
 	
 	// start render indexes
   var shapeMap = [];
@@ -102,13 +96,37 @@
   }
 	
 	// end render indexes
-	jQuery.fn.shapeIndex = 0;
+	jQuery.fn.gameNo = 0;
 	$("#tetrisBoard").show();
+  }
+  jQuery.fn.updateScore = function(score) {
+	$("#tetrisScore").html("Score : "+score);
+  }
+  jQuery.fn.tetrisNewgame = function() {
+	jQuery.fn.shape = null;
+	jQuery.fn.nextshape = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
+	jQuery.fn.shapeX = 0;
+	jQuery.fn.shapeY = 0;
+	jQuery.fn.shapeNo = 0;
+	jQuery.fn.shapeIndex = 0;
+	jQuery.fn.tetrisScore = 0;
+	jQuery.fn.tetrisHalt = false;
+	jQuery.fn.tetrisPause = false;
+	jQuery.fn.updateScore(0);
+    $('.popupBoard').remove();
+    $(".tetrisbox").hide();
+	$(".tetrisnext").hide();
+	jQuery.fn.gameNo++;
+    $("#tetrisBoard").tetrisShape().tetrisDown(jQuery.fn.gameNo);
   }
   jQuery.fn.tetrisStart = function(options) {
     $("body").tetrisSetup(options);
-	
+
     $(document).keydown(function(e){
+	  if (e.keyCode == 84) {
+	    jQuery.fn.tetrisPause = true;
+	    jQuery.fn.popupAbortGame();
+	  }
 	  if (e.keyCode == 80) {
 	    jQuery.fn.tetrisPause = !jQuery.fn.tetrisPause;
 	  }
@@ -128,7 +146,7 @@
         $("#tetrisBoard").tetrisMoveDown();
       }
     });
-    $("#tetrisBoard").tetrisShape().tetrisDown();
+    $("#tetrisBoard").tetrisNewgame();
   }
   jQuery.fn.tetrisShape = function() {
     jQuery.fn.shape  = jQuery.fn.nextshape;
@@ -140,15 +158,16 @@
 	jQuery.fn.shapeNo++;
 	return this;
   }
-  jQuery.fn.tetrisDown = function() {
+  jQuery.fn.tetrisDown = function(gameNo) {
+    if (jQuery.fn.tetrisHalt || gameNo < jQuery.fn.gameNo) {
+	  return true;
+	}
     var result = jQuery.fn.tetrisMoveDown();
 	if (result == false ) {
 	  if (jQuery.fn.shapeY < 0) {
-	    console.log('game over');
 	    jQuery.fn.tetrisPause = true;
-		$("#tetrisBoard").children().remove().end().css("background-color","gray")
-		.append('<div id="gameover" style="font-size: 22px; color:orange; padding-top:80px;'+
-		  ' font-family: arial">Game Over!</div>');
+		jQuery.fn.tetrisHalt = true;
+		jQuery.fn.popupGameOver();
 	  }
 	  // clear lines
 	  var filledFlag = true;
@@ -168,7 +187,7 @@
 		  if (filledFlag == true) {
 		    filledLine++;
 			jQuery.fn.tetrisScore++;
-			$("#tetrisScore").html("Score : "+jQuery.fn.tetrisScore);
+			jQuery.fn.updateScore(jQuery.fn.tetrisScore);
 			jQuery.fn.myOptions.fallSpeed += 1;
 		  }
 		}
@@ -187,9 +206,9 @@
 		}
 	  }
 	  // next shape
-	  $("#tetrisBoard").tetrisShape().tetrisDown();
+	  $("#tetrisBoard").tetrisShape().tetrisDown(gameNo);
 	} else {
-	  setTimeout('jQuery.fn.tetrisDown()',1000-(10*jQuery.fn.myOptions.fallSpeed));
+	  setTimeout('jQuery.fn.tetrisDown('+gameNo+')',1000-(10*jQuery.fn.myOptions.fallSpeed));
 	}
   }
   jQuery.fn.tetrisFallDown = function() {
@@ -301,6 +320,39 @@
 	  }
 	}
 	return false;
+  }
+  jQuery.fn.popupGameOver = function() {
+	$('<div class="popupBoard" style="z-index:10000;position:absolute;"></div>').css("background-color","gray")
+	.css("width", $("#tetrisBoard").css("width"))
+	.css("height", $("#tetrisBoard").css("height"))
+	.append('<div id="gameover" style="font-size: 22px; color:orange; padding-top:50px;'+
+	  ' font-family: arial; direction:ltr;">Game Over!</div>')
+	.append('<div id="newgame" style="font-size: 22px; height:40px; cursor: pointer;'+
+	  'color:orange; padding-top:50px; text-decoration:underline;'+
+	  ' font-family: arial">Try Again</div>')
+	.appendTo("#tetrisBoard");
+	$("#newgame").click(function(){
+	  jQuery.fn.tetrisNewgame();
+	});
+  }
+  jQuery.fn.popupAbortGame = function() {
+	$('<div class="popupBoard" style="z-index:10000;position:absolute;"></div>').css("background-color","gray")
+	.css("width", $("#tetrisBoard").css("width"))
+	.css("height", $("#tetrisBoard").css("height"))
+	.append('<div id="continue" style="font-size: 22px; color:orange; padding-top:50px; cursor: pointer;'+
+	  ' font-family: arial; direction:ltr; text-decoration:underline;">Continue >></div>')
+	.append('<div id="newgame" style="font-size: 22px; height:40px; cursor: pointer;'+
+	  'color:orange; padding-top:50px; text-decoration:underline;'+
+	  ' font-family: arial">Try Again</div>')
+	.appendTo("#tetrisBoard");
+	$("#newgame").click(function(){
+	  jQuery.fn.tetrisHalt = true;
+	  jQuery.fn.tetrisNewgame();
+	});
+	$("#continue").click(function(){
+	  $(".popupBoard").remove();
+	  jQuery.fn.tetrisPause = false;
+	});
   }
   jQuery.fn.tetrisShapes = [
 	{"rotate": 1,  "width":4, "map":"oooo"      , "indexes":[], "lIndexes":[], "rIndexes":[], "dIndexes":[]},//#0

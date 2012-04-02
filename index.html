@@ -60,6 +60,14 @@
 		.appendTo("#tetrisNext");
 	  }
 	}
+	$('<div id="tetrisHelp" style="position:absolute; text-align:left; padding:2px; background-color:#ffa">'+
+	  'use :<br/>'+
+	  '<b>arrows</b> to move and rotate<br />'+
+	  ' <b>enter</b>/<b>space</b> to fall down,<br />'+
+	  ' and <b>p</b> to pause and continue.'+
+	  ' </div>')
+	.css("left", (myOptions.cellWidth*myOptions.boardWidth+10)+"px")
+	.css("top", (myOptions.cellWidth*4+10)+"px").appendTo($(this));
 	jQuery.fn.shape = null;
 	jQuery.fn.nextshape = jQuery.fn.tetrisShapes[Math.floor(Math.random()*jQuery.fn.tetrisShapes.length)];
 	jQuery.fn.shapeX = 0;
